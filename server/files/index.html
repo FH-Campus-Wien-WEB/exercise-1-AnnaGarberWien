@@ -7,7 +7,101 @@
     <title>Movies!</title>
     <style>
         /* Part 3: Your styling goes here */
+
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@300;400;700&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #0d0d0d;
+            color: #e8e8e8;
+            padding: 40px 20px;
+        }
+
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #f5c518;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-weight: normal;
+            font-size: 2.8rem;
+            letter-spacing: 4px;
+            color: #f5c518;
+        }
+
+        h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-weight: normal;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            color: #f5c518;
+        }
+
+        img {
+            border-radius: 8px;
+            max-width:200px;
+            display: block;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+            flex-shrink: 0;
+        }
+
+        article {
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            margin: 24px 0;
+            padding: 24px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+            display: flex;
+            gap: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid #f5c518;
+        }
+
+        article:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(245, 197, 24, 0.15);
+        }
+
+        .movie-info { flex: 1; }
+        .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .movie-plot { font-size: 0.9rem; color: #aaa; line-height: 1.6; margin: 10px 0; font-style: italic; }
+        .detail-row { font-size: 0.85rem; color: #999; margin: 4px 0; }
+        .detail-row strong { color: #ccc; }
+        .ratings { display: flex; gap: 16px; margin-top: 14px; }
+
+        .rating-badge {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .rating-badge .score { display: block; font-size: 1.1rem; font-weight: 700; color: #f5c518; }
+        .rating-badge .label { color: #666; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
+
+        span.genre {
+            background-color: #2c2c00;
+            color: #f5c518;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid #f5c518;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
     </style>
+
     <script>
         function reverseString(s) {
             return s.split("").reverse().join("");
@@ -17,15 +111,90 @@
             const xhr = new XMLHttpRequest()
             xhr.onload = function () {
                 const bodyElement = document.querySelector("body")
-                if (xhr.status == 200) {
-		            /* Part 2: Build the HTML elements here and append them to the body */ 
-                    bodyElement.append(reverseString(xhr.responseText))
-                } else {
+                    if (xhr.status == 200) {
+                        /* Part 2: Build the HTML elements here and append them to the body */
+
+                        // JSON-String in JavaScript-Array umwandeln
+                        const movies = JSON.parse(xhr.responseText);
+                        const main = document.createElement("main");
+                        const header = document.createElement("header");
+                        header.innerHTML = `<h1>🎬 Movies</h1><p>${movies.length} Filme geladen</p>`;
+                        main.append(header);
+
+                        // Schleife über alle Filme
+                        movies.forEach(function (movie) {
+                            const article = document.createElement("article");
+                            // Post
+                            const img = document.createElement("img");
+                            img.src = movie.Poster;
+                            img.alt = "Poster: " + movie.Title;
+                            article.append(img);
+                            // Infoblock
+                            const infoDiv = document.createElement("div");
+                            infoDiv.className = "movie-info";
+                            // Titel
+                            infoDiv.innerHTML = `<h2>${movie.Title}</h2>`;
+
+
+                            // Genres
+                            const metaRow = document.createElement("div");
+                            metaRow.className = "meta-row";
+                            movie.Genres.split(",").forEach(g => {
+                                const span = document.createElement("span");
+                                span.className = "genre";
+                                span.textContent = g.trim();
+                                metaRow.append(span);
+                            });
+                            infoDiv.append(metaRow);
+
+                            // Plot
+                            const plot = document.createElement("p");
+                            plot.className = "movie-plot";
+                            plot.textContent = movie.Plot;
+                            infoDiv.append(plot);
+
+                            // Details
+                            [
+                                ["Directors", movie.Directors],
+                                ["Writers",   movie.Writers],
+                                ["Actors",    movie.Actors],
+                                ["Runtime",   movie.Runtime],
+                                ["Released",  movie.Released],
+                            ].forEach(([label, value]) => {
+                                const p = document.createElement("p");
+                                p.className = "detail-row";
+                                p.innerHTML = `<strong>${label}:</strong> ${value ?? "N/A"}`;
+                                infoDiv.append(p);
+                            });
+
+
+                            // Ratings (IMDb + Metascore)
+                            const ratingsDiv = document.createElement("div");
+                            ratingsDiv.className = "ratings";
+
+                            [
+                                ["⭐ " + movie.imdbRating, "IMDb"],
+                                [movie.Metascore,          "Metascore"]
+                            ].forEach(([score, label]) => {
+                                const badge = document.createElement("div");
+                                badge.className = "rating-badge";
+                                badge.innerHTML = `<span class="score">${score ?? "N/A"}</span><span class="label">${label}</span>`;
+                                ratingsDiv.append(badge);
+                            });
+
+                            infoDiv.append(ratingsDiv);
+
+                            article.append(infoDiv);
+                            main.append(article);
+                            });
+
+                            bodyElement.append(main);
+                        }else {
                     bodyElement.append("Daten konnten nicht geladen werden, Status " + xhr.status + " - " + xhr.statusText)
                 }
             }
             xhr.open("GET", "/movies")
-            xhr.send()
+            xhr.send();
         }
     </script>
 
