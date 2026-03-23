@@ -135,7 +135,6 @@
                             // Titel
                             infoDiv.innerHTML = `<h2>${movie.Title}</h2>`;
 
-
                             // Genres
                             const metaRow = document.createElement("div");
                             metaRow.className = "meta-row";
@@ -166,6 +165,7 @@
                                 p.innerHTML = `<strong>${label}:</strong> ${value ?? "N/A"}`;
                                 infoDiv.append(p);
                             });
+
 
 
                             // Ratings (IMDb + Metascore)
